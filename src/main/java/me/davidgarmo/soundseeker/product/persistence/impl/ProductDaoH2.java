@@ -58,7 +58,28 @@ public class ProductDaoH2 implements IProductDao {
 
     @Override
     public Product findById(Long id) {
-        return null;
+        Connection connection = null;
+        Product product = null;
+        String query = "SELECT * FROM PRODUCT WHERE ID = ?";
+
+        try {
+            connection = DBConnection.getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setLong(1, id);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                product = mapProduct(resultSet);
+                LOGGER.info("✔ Product found successfully: {}", product);
+                return product;
+            }
+        } catch (Exception e) {
+            LOGGER.error("✘ Error establishing connection: {}", e.getMessage());
+        } finally {
+            closeConnection(connection);
+        }
+
+        return product;
     }
 
     @Override
@@ -74,6 +95,19 @@ public class ProductDaoH2 implements IProductDao {
     @Override
     public void delete(Long id) {
 
+    }
+
+    private Product mapProduct(ResultSet resultSet) throws SQLException {
+        return new Product(
+                resultSet.getLong("ID"),
+                resultSet.getString("NAME"),
+                resultSet.getString("DESCRIPTION"),
+                resultSet.getString("BRAND"),
+                resultSet.getDouble("PRICE"),
+                resultSet.getBoolean("AVAILABLE"),
+                resultSet.getString("THUMBNAIL"),
+                resultSet.getLong("CATEGORY_ID")
+        );
     }
 
     private void closeConnection(Connection connection) {
