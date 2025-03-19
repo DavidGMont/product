@@ -7,6 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ProductDaoH2 implements IProductDao {
@@ -84,7 +85,28 @@ public class ProductDaoH2 implements IProductDao {
 
     @Override
     public List<Product> findAll() {
-        return List.of();
+        Connection connection = null;
+        List<Product> products = new ArrayList<>();
+        String query = "SELECT * FROM PRODUCT";
+
+        try {
+            connection = DBConnection.getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                products.add(mapProduct(resultSet));
+            }
+
+            LOGGER.info("✔ Products found successfully: {}", products);
+            return products;
+        } catch (Exception e) {
+            LOGGER.error("✘ Error establishing connection: {}", e.getMessage());
+        } finally {
+            closeConnection(connection);
+        }
+
+        return products;
     }
 
     @Override
