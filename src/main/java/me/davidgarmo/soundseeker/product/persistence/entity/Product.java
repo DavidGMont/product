@@ -1,7 +1,5 @@
 package me.davidgarmo.soundseeker.product.persistence.entity;
 
-import java.util.Set;
-
 public class Product {
     private Long id;
     private String name;
@@ -9,27 +7,27 @@ public class Product {
     private String brand;
     private Double price;
     private Boolean available;
-    private Set<String> images;
+    private String thumbnail;
     private Long categoryId;
 
-    public Product(String name, String description, String brand, Double price, Boolean available, Set<String> images, Long categoryId) {
+    public Product(String name, String description, String brand, Double price, Boolean available, String thumbnail, Long categoryId) {
         this.name = name;
         this.description = description;
         this.brand = brand;
         this.price = price;
         this.available = available;
-        this.images = images;
+        this.thumbnail = thumbnail;
         this.categoryId = categoryId;
     }
 
-    public Product(Long id, String name, String description, String brand, Double price, Boolean available, Set<String> images, Long categoryId) {
+    public Product(Long id, String name, String description, String brand, Double price, Boolean available, String thumbnail, Long categoryId) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.brand = brand;
         this.price = price;
         this.available = available;
-        this.images = images;
+        this.thumbnail = thumbnail;
         this.categoryId = categoryId;
     }
 
@@ -81,12 +79,12 @@ public class Product {
         this.available = available;
     }
 
-    public Set<String> getImages() {
-        return images;
+    public String getThumbnail() {
+        return thumbnail;
     }
 
-    public void setImages(Set<String> images) {
-        this.images = images;
+    public void setThumbnail(String thumbnail) {
+        this.thumbnail = thumbnail;
     }
 
     public Long getCategoryId() {
@@ -106,7 +104,7 @@ public class Product {
                 ", brand='" + brand + '\'' +
                 ", price=" + price +
                 ", available=" + available +
-                ", images=" + images +
+                ", thumbnail=" + thumbnail +
                 ", categoryId=" + categoryId +
                 '}';
     }
