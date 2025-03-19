@@ -154,7 +154,36 @@ public class ProductDaoH2 implements IProductDao {
 
     @Override
     public void delete(Long id) {
+        Connection connection = null;
+        String query = "DELETE FROM PRODUCT WHERE ID = ?";
 
+        try {
+            connection = DBConnection.getConnection();
+            connection.setAutoCommit(false);
+
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setLong(1, id);
+
+            int deletedRows = preparedStatement.executeUpdate();
+            if (deletedRows > 0) {
+                LOGGER.info("✔ Product deleted successfully: {}", id);
+            } else {
+                LOGGER.warn("✘ Product not found: {}", id);
+            }
+
+            connection.commit();
+        } catch (Exception e) {
+            LOGGER.error("✘ Error deleting product: {}", e.getMessage());
+            if (connection != null) {
+                try {
+                    connection.rollback();
+                } catch (SQLException ex) {
+                    LOGGER.error("✘ Error rolling back transaction: {}", ex.getMessage());
+                }
+            }
+        } finally {
+            closeConnection(connection);
+        }
     }
 
     private Product mapProduct(ResultSet resultSet) throws SQLException {
