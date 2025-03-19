@@ -1,0 +1,51 @@
+DROP TABLE IF EXISTS PRODUCT;
+
+CREATE TABLE PRODUCT
+(
+    ID          BIGINT AUTO_INCREMENT PRIMARY KEY,
+    NAME        VARCHAR(60)    NOT NULL UNIQUE,
+    DESCRIPTION VARCHAR(1000)  NOT NULL,
+    BRAND       VARCHAR(60)    NOT NULL,
+    PRICE       DECIMAL(10, 2) NOT NULL,
+    AVAILABLE   BOOLEAN        NOT NULL,
+    THUMBNAIL   VARCHAR(255),
+    CATEGORY_ID BIGINT         NOT NULL
+);
+
+INSERT INTO PRODUCT (NAME, DESCRIPTION, BRAND, PRICE, AVAILABLE, THUMBNAIL, CATEGORY_ID)
+VALUES ('Ukulele Kalani Concierto UK-23 TBL Aguamarina',
+        'El Ukelele es un instrumento musical de cuerda pulsada, similar a una guitarra de pequeño tamaño, originario de Hawái y popular en todo el mundo, el ukelele emite un sonido más cálido; es por eso que muchos iniciados prefieren tamaños de ukelele más pequeños, ya que estos conservan mejor ese tono brillante y exótico tan característico del ukelele.',
+        'Kalani', 99.99, 1, '/img/045tsg5i.webp', 1),
+       ('Acordeón Hohner Rey Vallenato ADG Naranja',
+        'El acordeón Hohner Rey Vallenato ADG naranja es un hermoso acordeón de 3 lengüetas para músicos principiantes y avanzados. Presentamos un instrumento específicamente diseñado para satisfacer los requisitos de la música del vallenato.',
+        'Hohner', 699.99, 0, '/img/cg6mg1kd.webp', 2),
+       ('Guitarra Eléctrica Fender Squier Surf Pearl',
+        'La Serie Contemporánea Jazzmaster HH de Squier luce la apariencia de un Jazzmaster clásico, reforzado con pastillas de cerámica activas para satisfacer las necesidades de alto rendimiento de los sonidos modernos. Esta guitarra cuenta con un mástil delgado y rápido en forma de \"C\", con un radio de diapasón de 12\" ideal para velocidad y curvas sin esfuerzo, y un puente ajustable con barra de parada proporcionando una maxima estabilidad de sintonización incluso en afinaciones de caída.',
+        'Cort', 499.99, 1, '/img/73de23d1.webp', 1),
+       ('Bajo Eléctrico Cort Walnut Action PJ Café',
+        'Asequibles pero cargados de materiales, componentes y artesanía de calidad, los bajos de la serie Action definen el valor para el aspirante a bajista con características versátiles como opciones de pastillas PJ, JJ y soapbar y electrónica de ecualización activa. Action PJ cuenta con un juego de pastillas PJ, la pastilla de bajo tipo P es ideal para géneros como el hard rock y el rock clásico, mientras que la pastilla tipo J es ideal para el jazz y el pop. Esta combinación proporciona una gran cantidad de sonidos de bajo clásicos para prácticamente cualquier género y estilo musical.',
+        'Cort', 599.99, 1, '/img/98hkzz5o.webp', 1),
+       ('Acordeón Hohner Rey Vallenato Besas Amarillo',
+        'El aire está lleno de música, risas y gente hablando —pero aun así se hace oír con claridad el característico sonido HOHNER. Especialmente, si se trata del Corona III, el más grande de la Serie Corona. El sonido voluminoso y estimulante encanta a la audiencia y al músico de igual manera, los invita a moverse, a bailar y a disfrutar. Una joya muy apreciada en vallenato, el norteño y el tex-mex, el Corona III es el acordeón perfecto para los músicos profesionales que están en la búsqueda de un sonido distintivo y poderoso, junto a características de longevidad y hermosa apariencia.',
+        'Hohner', 699.99, 1, '/img/ufy53d0r.webp', 2),
+       ('Acordeón Hohner Rey Vallenato ADG Rojo',
+        'El acordeón Hohner Rey Vallenato ADG rojo es un hermoso acordeón de 3 lengüetas para músicos principiantes y avanzados. Presentamos un instrumento específicamente diseñado para satisfacer los requisitos de la música del vallenato.',
+        'Hohner', 699.99, 1, '/img/bmcyndpb.webp', 2),
+       ('Piano Digital Kurzweil M230 Rosewood Con Silla',
+        '88 Teclas peso completo con acción graduada de martillo , teclado con sensibilidad ajustable. Presentando una variedad de pianos acústicos y eléctricos , órganos ,guitarra e instrumentos de orquesta. Maneja un panel de control de fácil acceso para las funciones que contiende el piano. Maneja los pedales de sustein, sostenuto y pedal suave. (128 Polifonías - 20 wats speakers).',
+        'Kurzweil', 1199.99, 1, '/img/qwvxyop8.webp', 3),
+       ('Tumbadora Tycoon Master Classic Series Natural MTC-130',
+        'Construido con madera de roble Siam envejecida seleccionada a mano, que proporciona una durabilidad excepcional y un sonido inigualable. 30\" de altura con barriga ancha para crear tonos graves ricos y profundos. Aros de lujo, placas laterales reforzadas con orejetas de afinación de 3/8\" de diámetro.',
+        'Tycoon', 359.99, 1, '/img/rtlmawch.webp', 4),
+       ('Trompeta para Estudiante Bach TR650',
+        'La Trompeta lacada Selmer-Bach TR650 es un instrumento para estudiantes. Sus características la hacen un instrumento muy versátil y práctico también para iniciación musical, Sus pistones están construidos en acero inoxidable para mayor duración y disminuir su mantenimiento, Posee anillo pulgar en primera bomba y anillo de afinación en tercera bomba.',
+        'Bach', 1199.99, 1, '/img/a63ix6ub.webp', 7),
+       ('Saxofón Alto Conn AS650',
+        'Hoy, CG Conn establece el estándar para instrumentos de latón de alta calidad. La larga y exitosa historia de la fabricación ha crecido, impulsada por la pasión y el amor a la música. ¡Toca y lo oirás!',
+        'Conn-Selmer', 1699.99, 1, '/img/07sja2qj.webp', 7),
+       ('Flauta Traversa con Sistema Abierto Armstrong',
+        'Durante más de 75 años, las flautas de Armstrong han sido la encarnación de la confiabilidad. Los maestros y músicos de todo el mundo siguen recomendando las flautas de Armstrong.',
+        'Armstrong', 1399.99, 1, '/img/aqd5s0ch.webp', 7),
+       ('Violín 4/4 Sólido Verona HXTQ09FRO Natural',
+        'El Violín Verona es un instrumento hecho de madera solida, diseñado para estudiantes de nivel académico medio o iniciación para estudios formales.',
+        'Verona', 599.99, 1, '/img/2zmqvhvm.webp', 8)
