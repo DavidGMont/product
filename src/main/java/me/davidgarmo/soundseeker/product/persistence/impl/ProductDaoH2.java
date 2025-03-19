@@ -111,7 +111,45 @@ public class ProductDaoH2 implements IProductDao {
 
     @Override
     public Product update(Product product) {
-        return null;
+        Connection connection = null;
+        String query = "UPDATE PRODUCT SET NAME = ?, DESCRIPTION = ?, BRAND = ?, PRICE = ?, AVAILABLE = ?, THUMBNAIL = ?, CATEGORY_ID = ? WHERE ID = ?";
+
+        try {
+            connection = DBConnection.getConnection();
+            connection.setAutoCommit(false);
+
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setString(1, product.getName());
+            preparedStatement.setString(2, product.getDescription());
+            preparedStatement.setString(3, product.getBrand());
+            preparedStatement.setDouble(4, product.getPrice());
+            preparedStatement.setBoolean(5, product.getAvailable());
+            preparedStatement.setString(6, product.getThumbnail());
+            preparedStatement.setLong(7, product.getCategoryId());
+            preparedStatement.setLong(8, product.getId());
+
+            int updatedRows = preparedStatement.executeUpdate();
+            if (updatedRows > 0) {
+                LOGGER.info("✔ Product updated successfully: {}", product);
+            } else {
+                LOGGER.warn("✘ Product not found: {}", product.getId());
+            }
+
+            connection.commit();
+        } catch (Exception e) {
+            LOGGER.error("✘ Error updating product: {}", e.getMessage());
+            if (connection != null) {
+                try {
+                    connection.rollback();
+                } catch (SQLException ex) {
+                    LOGGER.error("✘ Error rolling back transaction: {}", ex.getMessage());
+                }
+            }
+        } finally {
+            closeConnection(connection);
+        }
+
+        return product;
     }
 
     @Override
