@@ -1,7 +1,7 @@
 package me.davidgarmo.soundseeker.product.persistence.impl;
 
 import me.davidgarmo.soundseeker.product.config.DBConnection;
-import me.davidgarmo.soundseeker.product.persistence.dao.IProductDao;
+import me.davidgarmo.soundseeker.product.persistence.dao.IDao;
 import me.davidgarmo.soundseeker.product.persistence.entity.Product;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -10,7 +10,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProductDaoH2 implements IProductDao {
+public class ProductDaoH2 implements IDao<Product> {
 
     private static final Logger LOGGER = LogManager.getLogger();
 
