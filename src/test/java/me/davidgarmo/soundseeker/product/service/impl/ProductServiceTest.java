@@ -15,9 +15,9 @@ import java.sql.Statement;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ProductoServiceTest {
+class ProductServiceTest {
     static final Logger LOGGER = LogManager.getLogger();
-    ProductoService productoService;
+    ProductService productService;
 
     @BeforeEach
     void setUp() {
@@ -25,7 +25,7 @@ class ProductoServiceTest {
             try (Statement statement = connection.createStatement()) {
                 statement.execute("RUNSCRIPT FROM 'classpath:init.sql'");
             }
-            productoService = new ProductoService(new ProductDaoH2());
+            productService = new ProductService(new ProductDaoH2());
             LOGGER.info("✔ Database reset successfully.");
         } catch (Exception e) {
             e.printStackTrace();
@@ -38,7 +38,7 @@ class ProductoServiceTest {
                 "Cuerno de caza, Acción Sib, Campana: 146mm, Material: latón, Chapado: barniz, plata, níquel.",
                 "Jimbao", 199.99, true, "/img/eibo6hwc.webp", 7L);
 
-        Product savedProduct = productoService.save(product);
+        Product savedProduct = productService.save(product);
 
         assertThat(savedProduct).isNotNull();
         assertThat(savedProduct.getId()).isNotNull().isEqualTo(11L);
@@ -56,7 +56,7 @@ class ProductoServiceTest {
 
     @Test
     void givenAnExistingProductId_whenFoundById_thenItShouldReturnTheProduct() {
-        Product product = productoService.findById(1L);
+        Product product = productService.findById(1L);
 
         assertThat(product).isNotNull();
         assertThat(product.getId()).isEqualTo(1L);
@@ -77,9 +77,9 @@ class ProductoServiceTest {
 
     @Test
     void givenAnExistingProduct_whenUpdated_thenItShouldPersistTheChangesInTheDatabase() {
-        Product originalProduct = productoService.findById(1L);
+        Product originalProduct = productService.findById(1L);
 
-        Product productToUpdate = productoService.findById(1L);
+        Product productToUpdate = productService.findById(1L);
         productToUpdate.setName("Melódica Fire Sound Electra White-Blue (9432/32)");
         productToUpdate.setDescription("Con la Fire Melódica, hemos dado a nuestra melódica un nuevo aspecto que " +
                 "volará sus cabezas. Teclas blanco y azul y un cuerpo azul y brillante con una estructura robusta, " +
@@ -90,7 +90,7 @@ class ProductoServiceTest {
         productToUpdate.setThumbnail("/img/7jorfm.webp");
         productToUpdate.setCategoryId(8L);
 
-        Product updatedProduct = productoService.update(productToUpdate);
+        Product updatedProduct = productService.update(productToUpdate);
 
         assertThat(updatedProduct).isNotNull();
         assertThat(updatedProduct.getId()).isEqualTo(1L);
@@ -139,9 +139,9 @@ class ProductoServiceTest {
 
     @Test
     void givenAnExistingProductId_whenDeleted_thenItShouldBeRemovedFromTheDatabase() {
-        productoService.delete(1L);
+        productService.delete(1L);
 
-        Product product = productoService.findById(1L);
+        Product product = productService.findById(1L);
 
         assertThat(product).isNull();
         LOGGER.info("✔ The product was deleted successfully and it is no longer in the database.");

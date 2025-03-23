@@ -6,10 +6,10 @@ import me.davidgarmo.soundseeker.product.service.IProductService;
 
 import java.util.List;
 
-public class ProductoService implements IProductService {
+public class ProductService implements IProductService {
     private final IDao<Product> productIDao;
 
-    public ProductoService(IDao<Product> productIDao) {
+    public ProductService(IDao<Product> productIDao) {
         this.productIDao = productIDao;
     }
 
