@@ -1,5 +1,7 @@
 package me.davidgarmo.soundseeker.product.persistence.entity;
 
+import java.util.Locale;
+
 public class Product {
     private Long id;
     private String name;
@@ -97,15 +99,19 @@ public class Product {
 
     @Override
     public String toString() {
-        return "Product{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", brand='" + brand + '\'' +
-                ", price=" + price +
-                ", available=" + available +
-                ", thumbnail=" + thumbnail +
-                ", categoryId=" + categoryId +
-                '}';
+        return String.format(Locale.ENGLISH,
+                """
+                        {
+                            id: %s,
+                            name: "%s",
+                            description: "%s",
+                            brand: "%s",
+                            price: %.2f,
+                            available: %b,
+                            thumbnail: "%s",
+                            categoryId: %s
+                        }
+                        """,
+                id, name, description, brand, price, available, thumbnail, categoryId);
     }
 }
