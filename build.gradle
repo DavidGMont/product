@@ -19,6 +19,8 @@ dependencies {
     implementation group: 'com.h2database', name: 'h2', version: '2.3.232'
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.27.3'
+    testImplementation group: 'de.vandermeer', name: 'asciitable', version: '0.3.2'
 }
 
 test {
