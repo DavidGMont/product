@@ -3,6 +3,7 @@ package me.davidgarmo.soundseeker.product.persistence.impl;
 import me.davidgarmo.soundseeker.product.config.DBConnection;
 import me.davidgarmo.soundseeker.product.persistence.dao.IDao;
 import me.davidgarmo.soundseeker.product.persistence.entity.Product;
+import me.davidgarmo.soundseeker.product.service.expection.ProductNotFoundException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -78,6 +79,10 @@ public class ProductDaoH2 implements IDao<Product> {
             LOGGER.error("✘ Error establishing connection: {}", e.getMessage());
         } finally {
             closeConnection(connection);
+        }
+
+        if (product == null) {
+            throw new ProductNotFoundException("Product not found with ID: " + id);
         }
 
         return product;
