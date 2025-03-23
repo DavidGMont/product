@@ -5,15 +5,19 @@ import de.vandermeer.skb.interfaces.transformers.textformat.TextAlignment;
 import me.davidgarmo.soundseeker.product.config.DBConnection;
 import me.davidgarmo.soundseeker.product.persistence.entity.Product;
 import me.davidgarmo.soundseeker.product.persistence.impl.ProductDaoH2;
+import me.davidgarmo.soundseeker.product.service.expection.ProductNotFoundException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ProductServiceTest {
     static final Logger LOGGER = LogManager.getLogger();
@@ -76,6 +80,47 @@ class ProductServiceTest {
     }
 
     @Test
+    void givenANonExistingProductId_whenFoundById_thenItShouldThrowProductNotFoundException() {
+        assertThatThrownBy(() -> productService.findById(11L))
+                .isInstanceOf(ProductNotFoundException.class)
+                .hasMessage("Product not found with ID: 11");
+        LOGGER.info("✔ The expected exception was thrown when the product was not found.");
+    }
+
+    @Test
+    void givenTheDatabase_whenFindAll_thenItShouldReturnAllProducts() {
+        List<Product> products = productService.findAll();
+        assertThat(products.size()).isEqualTo(10);
+
+        AsciiTable table = new AsciiTable();
+        table.addRule();
+        table.addRow("ID", "Name", "Description", "Brand", "Price", "Available", "Thumbnail", "Category ID");
+        table.addRule();
+        products.forEach(product -> {
+            table.addRow(product.getId(), product.getName(), product.getDescription(), product.getBrand(),
+                    product.getPrice(), product.getAvailable(), product.getThumbnail(), product.getCategoryId());
+            table.addRule();
+        });
+        LOGGER.info(table.render(160));
+        LOGGER.info("✔ All products were found successfully.");
+    }
+
+    @Test
+    void givenTheDatabaseHasNoProducts_whenFindAll_thenItShouldReturnEmptyList() {
+        try (Connection connection = DBConnection.getConnection()) {
+            try (Statement statement = connection.createStatement()) {
+                statement.execute("DELETE FROM PRODUCT");
+            }
+        } catch (SQLException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        List<Product> products = productService.findAll();
+        assertThat(products).isEmpty();
+        LOGGER.info("✔ The database has no products and the findAll method returned an empty list.");
+    }
+
+    @Test
     void givenAnExistingProduct_whenUpdated_thenItShouldPersistTheChangesInTheDatabase() {
         Product originalProduct = productService.findById(1L);
 
@@ -112,6 +157,18 @@ class ProductServiceTest {
         LOGGER.info("✔ The product was updated successfully and the data matches the expected values.");
     }
 
+    @Test
+    void givenAnExistingProductId_whenDeleted_thenItShouldBeRemovedFromTheDatabase() {
+        int initialCount = productService.findAll().size();
+
+        productService.delete(1L);
+
+        int finalCount = productService.findAll().size();
+
+        assertThat(finalCount).isEqualTo(initialCount - 1);
+        LOGGER.info("✔ The product was deleted successfully and the record count decreased by 1.");
+    }
+
     private static AsciiTable getTable(Product originalProduct, Product updatedProduct) {
         AsciiTable table = new AsciiTable();
         table.addRule();
@@ -135,15 +192,5 @@ class ProductServiceTest {
         table.addRule();
         table.setTextAlignment(TextAlignment.LEFT);
         return table;
-    }
-
-    @Test
-    void givenAnExistingProductId_whenDeleted_thenItShouldBeRemovedFromTheDatabase() {
-        productService.delete(1L);
-
-        Product product = productService.findById(1L);
-
-        assertThat(product).isNull();
-        LOGGER.info("✔ The product was deleted successfully and it is no longer in the database.");
     }
 }
