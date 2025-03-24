@@ -25,13 +25,7 @@ public class ProductDaoH2 implements IDao<Product> {
             connection.setAutoCommit(false);
 
             PreparedStatement preparedStatement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            preparedStatement.setString(1, product.getName());
-            preparedStatement.setString(2, product.getDescription());
-            preparedStatement.setString(3, product.getBrand());
-            preparedStatement.setDouble(4, product.getPrice());
-            preparedStatement.setBoolean(5, product.getAvailable());
-            preparedStatement.setString(6, product.getThumbnail());
-            preparedStatement.setLong(7, product.getCategoryId());
+            setData(product, preparedStatement);
 
             preparedStatement.executeUpdate();
 
@@ -124,13 +118,7 @@ public class ProductDaoH2 implements IDao<Product> {
             connection.setAutoCommit(false);
 
             PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setString(1, product.getName());
-            preparedStatement.setString(2, product.getDescription());
-            preparedStatement.setString(3, product.getBrand());
-            preparedStatement.setDouble(4, product.getPrice());
-            preparedStatement.setBoolean(5, product.getAvailable());
-            preparedStatement.setString(6, product.getThumbnail());
-            preparedStatement.setLong(7, product.getCategoryId());
+            setData(product, preparedStatement);
             preparedStatement.setLong(8, product.getId());
 
             int updatedRows = preparedStatement.executeUpdate();
@@ -189,6 +177,16 @@ public class ProductDaoH2 implements IDao<Product> {
         } finally {
             closeConnection(connection);
         }
+    }
+
+    private void setData(Product product, PreparedStatement preparedStatement) throws SQLException {
+        preparedStatement.setString(1, product.getName());
+        preparedStatement.setString(2, product.getDescription());
+        preparedStatement.setString(3, product.getBrand());
+        preparedStatement.setDouble(4, product.getPrice());
+        preparedStatement.setBoolean(5, product.getAvailable());
+        preparedStatement.setString(6, product.getThumbnail());
+        preparedStatement.setLong(7, product.getCategoryId());
     }
 
     private Product mapProduct(ResultSet resultSet) throws SQLException {
