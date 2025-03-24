@@ -19,6 +19,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ProductServiceTest {
     static final Logger LOGGER = LogManager.getLogger();
     ProductService productService;
@@ -37,6 +38,7 @@ class ProductServiceTest {
     }
 
     @Test
+    @Order(1)
     void givenACompleteProduct_whenSaved_thenItShouldPersistInTheDatabase() {
         Product product = new Product("Corneta Doradas JBBC-1600 L Jimbao",
                 "Cuerno de caza, Acción Sib, Campana: 146mm, Material: latón, Chapado: barniz, plata, níquel.",
@@ -59,6 +61,7 @@ class ProductServiceTest {
     }
 
     @Test
+    @Order(2)
     void givenAnExistingProductId_whenFoundById_thenItShouldReturnTheProduct() {
         Product product = productService.findById(1L);
 
@@ -80,6 +83,7 @@ class ProductServiceTest {
     }
 
     @Test
+    @Order(3)
     void givenANonExistingProductId_whenFoundById_thenItShouldThrowProductNotFoundException() {
         assertThatThrownBy(() -> productService.findById(11L))
                 .isInstanceOf(ProductNotFoundException.class)
@@ -88,6 +92,7 @@ class ProductServiceTest {
     }
 
     @Test
+    @Order(4)
     void givenTheDatabase_whenFindAll_thenItShouldReturnAllProducts() {
         List<Product> products = productService.findAll();
         assertThat(products.size()).isEqualTo(10);
@@ -106,6 +111,7 @@ class ProductServiceTest {
     }
 
     @Test
+    @Order(5)
     void givenTheDatabaseHasNoProducts_whenFindAll_thenItShouldReturnEmptyList() {
         try (Connection connection = DBConnection.getConnection()) {
             try (Statement statement = connection.createStatement()) {
@@ -121,6 +127,7 @@ class ProductServiceTest {
     }
 
     @Test
+    @Order(6)
     void givenAnExistingProduct_whenUpdated_thenItShouldPersistTheChangesInTheDatabase() {
         Product originalProduct = productService.findById(1L);
 
@@ -158,6 +165,7 @@ class ProductServiceTest {
     }
 
     @Test
+    @Order(7)
     void givenAnExistingProductId_whenDeleted_thenItShouldBeRemovedFromTheDatabase() {
         int initialCount = productService.findAll().size();
 
