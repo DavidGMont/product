@@ -35,7 +35,7 @@ public class ProductDaoH2 implements IDao<Product> {
             }
 
             connection.commit();
-            LOGGER.info("✔ Product saved successfully: {}", product);
+            LOGGER.debug("✔ Product saved successfully: \n{}", product);
         } catch (Exception e) {
             LOGGER.error("✘ Error saving product: {}", e.getMessage());
             rollbackTransaction(connection);
@@ -60,7 +60,7 @@ public class ProductDaoH2 implements IDao<Product> {
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
                 product = mapProduct(resultSet);
-                LOGGER.info("✔ Product found successfully: {}", product);
+                LOGGER.debug("✔ Product found successfully: \n{}", product);
                 return product;
             }
         } catch (Exception e) {
@@ -91,7 +91,7 @@ public class ProductDaoH2 implements IDao<Product> {
                 products.add(mapProduct(resultSet));
             }
 
-            LOGGER.info("✔ Products found successfully: {}", products);
+            LOGGER.debug("✔ Products found successfully: \n{}", products);
             return products;
         } catch (Exception e) {
             LOGGER.error("✘ Error establishing connection: {}", e.getMessage());
@@ -117,7 +117,7 @@ public class ProductDaoH2 implements IDao<Product> {
 
             int updatedRows = preparedStatement.executeUpdate();
             if (updatedRows > 0) {
-                LOGGER.info("✔ Product updated successfully: {}", product);
+                LOGGER.debug("✔ Product updated successfully: \n{}", product);
             } else {
                 LOGGER.warn("✘ Product not found: {}", product.getId());
             }
@@ -147,7 +147,7 @@ public class ProductDaoH2 implements IDao<Product> {
 
             int deletedRows = preparedStatement.executeUpdate();
             if (deletedRows > 0) {
-                LOGGER.info("✔ Product deleted successfully: {}", id);
+                LOGGER.debug("✔ Product deleted successfully: {}", id);
             } else {
                 LOGGER.warn("✘ Product not found: {}", id);
             }
@@ -199,6 +199,7 @@ public class ProductDaoH2 implements IDao<Product> {
         if (connection != null) {
             try {
                 connection.close();
+                LOGGER.debug("✔ Connection closed successfully.");
             } catch (SQLException e) {
                 LOGGER.error("✘ Error closing connection: {}", e.getMessage());
             }
