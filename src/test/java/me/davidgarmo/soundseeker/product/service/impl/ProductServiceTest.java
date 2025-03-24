@@ -8,8 +8,7 @@ import me.davidgarmo.soundseeker.product.persistence.impl.ProductDaoH2;
 import me.davidgarmo.soundseeker.product.service.expection.ProductNotFoundException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -31,9 +30,9 @@ class ProductServiceTest {
                 statement.execute("RUNSCRIPT FROM 'classpath:init.sql'");
             }
             productService = new ProductService(new ProductDaoH2());
-            LOGGER.info("✔ Database reset successfully.");
+            LOGGER.debug("✔ Database reset successfully.");
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("✘ Error resetting database: {}", e.getMessage());
         }
     }
 
@@ -57,7 +56,7 @@ class ProductServiceTest {
                 .extracting("name", "description", "brand", "price", "available", "thumbnail", "categoryId")
                 .containsExactly(product.getName(), product.getDescription(), product.getBrand(),
                         product.getPrice(), product.getAvailable(), product.getThumbnail(), product.getCategoryId());
-        LOGGER.info("✔ The placeholder product was saved successfully and the data matches the expected values.");
+        LOGGER.info("\n✔ The placeholder product was saved successfully and the data matches the expected values.");
     }
 
     @Test
@@ -79,7 +78,7 @@ class ProductServiceTest {
                                 "estructura robusta, hermética y el sonido típico de la melódica. ¡Un diseño robusto " +
                                 "para un instrumento caliente!",
                         "Hohner", 49.99, true, "/img/lg1jorfm.webp", 7L);
-        LOGGER.info("✔ The product was found successfully and the data matches the expected values.");
+        LOGGER.info("\n✔ The product stored in the database was found successfully and the data matches the expected values.");
     }
 
     @Test
@@ -88,7 +87,7 @@ class ProductServiceTest {
         assertThatThrownBy(() -> productService.findById(11L))
                 .isInstanceOf(ProductNotFoundException.class)
                 .hasMessage("Product not found with ID: 11");
-        LOGGER.info("✔ The expected exception was thrown when the product was not found.");
+        LOGGER.info("\n✔ The expected exception was thrown when the product was not found.");
     }
 
     @Test
@@ -106,8 +105,8 @@ class ProductServiceTest {
                     product.getPrice(), product.getAvailable(), product.getThumbnail(), product.getCategoryId());
             table.addRule();
         });
+        LOGGER.info("\n✔ All 10 products stored in the database were found successfully.");
         LOGGER.info(table.render(160));
-        LOGGER.info("✔ All products were found successfully.");
     }
 
     @Test
@@ -123,7 +122,7 @@ class ProductServiceTest {
 
         List<Product> products = productService.findAll();
         assertThat(products).isEmpty();
-        LOGGER.info("✔ The database has no products and the findAll method returned an empty list.");
+        LOGGER.info("\n✔ The database has no products and the findAll method returned an empty list.");
     }
 
     @Test
@@ -160,8 +159,8 @@ class ProductServiceTest {
                         productToUpdate.getThumbnail(), productToUpdate.getCategoryId());
 
         AsciiTable table = getTable(originalProduct, updatedProduct);
+        LOGGER.info("\n✔ The product was updated successfully and the data matches the expected values.");
         LOGGER.info(table.render());
-        LOGGER.info("✔ The product was updated successfully and the data matches the expected values.");
     }
 
     @Test
@@ -174,7 +173,7 @@ class ProductServiceTest {
         int finalCount = productService.findAll().size();
 
         assertThat(finalCount).isEqualTo(initialCount - 1);
-        LOGGER.info("✔ The product was deleted successfully and the record count decreased by 1.");
+        LOGGER.info("\n✔ The product was deleted successfully and the record count decreased by 1.");
     }
 
     private static AsciiTable getTable(Product originalProduct, Product updatedProduct) {
