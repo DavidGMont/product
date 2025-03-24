@@ -37,14 +37,8 @@ public class ProductDaoH2 implements IDao<Product> {
             connection.commit();
             LOGGER.info("✔ Product saved successfully: {}", product);
         } catch (Exception e) {
-            LOGGER.info("✘ Error saving product: {}", e.getMessage());
-            if (connection != null) {
-                try {
-                    connection.rollback();
-                } catch (SQLException ex) {
-                    LOGGER.error("✘ Error rolling back transaction: {}", ex.getMessage());
-                }
-            }
+            LOGGER.error("✘ Error saving product: {}", e.getMessage());
+            rollbackTransaction(connection);
         } finally {
             closeConnection(connection);
         }
@@ -131,13 +125,7 @@ public class ProductDaoH2 implements IDao<Product> {
             connection.commit();
         } catch (Exception e) {
             LOGGER.error("✘ Error updating product: {}", e.getMessage());
-            if (connection != null) {
-                try {
-                    connection.rollback();
-                } catch (SQLException ex) {
-                    LOGGER.error("✘ Error rolling back transaction: {}", ex.getMessage());
-                }
-            }
+            rollbackTransaction(connection);
         } finally {
             closeConnection(connection);
         }
@@ -167,13 +155,7 @@ public class ProductDaoH2 implements IDao<Product> {
             connection.commit();
         } catch (Exception e) {
             LOGGER.error("✘ Error deleting product: {}", e.getMessage());
-            if (connection != null) {
-                try {
-                    connection.rollback();
-                } catch (SQLException ex) {
-                    LOGGER.error("✘ Error rolling back transaction: {}", ex.getMessage());
-                }
-            }
+            rollbackTransaction(connection);
         } finally {
             closeConnection(connection);
         }
@@ -200,6 +182,17 @@ public class ProductDaoH2 implements IDao<Product> {
                 resultSet.getString("THUMBNAIL"),
                 resultSet.getLong("CATEGORY_ID")
         );
+    }
+
+    private void rollbackTransaction(Connection connection) {
+        if (connection != null) {
+            try {
+                connection.rollback();
+                LOGGER.debug("Transaction rolled back successfully.");
+            } catch (SQLException ex) {
+                LOGGER.error("Error rolling back transaction: {}", ex.getMessage());
+            }
+        }
     }
 
     private void closeConnection(Connection connection) {
