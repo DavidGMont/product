@@ -38,10 +38,9 @@ me.davidgarmo.soundseeker.product/
 │   └── impl/
 │       └── ProductService.java         # Implementación del servicio
 └── test/
-    ├── dao/
-    │   └── ProductDaoH2Test.java       # Tests para ProductDaoH2
     └── service/
-        └── ProductServiceTest.java     # Tests para ProductService
+        └── impl/
+            └── ProductServiceTest.java # Tests para ProductService
 ```
 
 ## 🛠️ Tecnologías utilizadas
