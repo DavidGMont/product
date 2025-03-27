@@ -17,6 +17,7 @@ public class ProductDaoH2 implements IDao<Product> {
     private static final String SQL_SELECT_BY_ID = "SELECT * FROM PRODUCT WHERE ID = ?";
     private static final String SQL_SELECT_ALL = "SELECT * FROM PRODUCT";
     private static final String SQL_UPDATE = "UPDATE PRODUCT SET NAME = ?, DESCRIPTION = ?, BRAND = ?, PRICE = ?, AVAILABLE = ?, THUMBNAIL = ?, CATEGORY_ID = ? WHERE ID = ?";
+    private static final String SQL_DELETE = "DELETE FROM PRODUCT WHERE ID = ?";
 
     @Override
     public Product save(Product product) {
@@ -146,28 +147,27 @@ public class ProductDaoH2 implements IDao<Product> {
     @Override
     public void delete(Long id) {
         Connection connection = null;
-        String query = "DELETE FROM PRODUCT WHERE ID = ?";
+        PreparedStatement preparedStatement = null;
 
         try {
             connection = DBConnection.getConnection();
             connection.setAutoCommit(false);
 
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement = connection.prepareStatement(SQL_DELETE);
             preparedStatement.setLong(1, id);
 
             int deletedRows = preparedStatement.executeUpdate();
             if (deletedRows > 0) {
+                connection.commit();
                 LOGGER.debug("✔ Product deleted successfully: {}", id);
             } else {
-                LOGGER.warn("✘ Product not found: {}", id);
+                LOGGER.warn("✘ No product found to delete with ID: {}", id);
             }
-
-            connection.commit();
         } catch (Exception e) {
             LOGGER.error("✘ Error deleting product: {}", e.getMessage());
             rollbackTransaction(connection);
         } finally {
-            closeConnection(connection);
+            closeResources(null, preparedStatement, connection);
         }
     }
 
