@@ -25,6 +25,15 @@ public class ProductServlet extends HttpServlet {
         this.gson = new Gson();
     }
 
+    private static boolean verifyProductId(HttpServletResponse resp, String pathInfo, PrintWriter out) {
+        if (pathInfo == null || pathInfo.equals("/")) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            out.print("{\"error\": \"Product ID is required.\"}");
+            return true;
+        }
+        return false;
+    }
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setContentType("application/json");
@@ -135,15 +144,6 @@ public class ProductServlet extends HttpServlet {
         }
 
         out.flush();
-    }
-
-    private static boolean verifyProductId(HttpServletResponse resp, String pathInfo, PrintWriter out) {
-        if (pathInfo == null || pathInfo.equals("/")) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            out.print("{\"error\": \"Product ID is required.\"}");
-            return true;
-        }
-        return false;
     }
 
     private boolean verifyProductExistence(HttpServletResponse resp, Long id, PrintWriter out) {

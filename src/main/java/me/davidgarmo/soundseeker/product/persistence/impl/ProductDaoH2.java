@@ -19,6 +19,17 @@ public class ProductDaoH2 implements IDao<Product> {
     private static final String SQL_UPDATE = "UPDATE PRODUCT SET NAME = ?, DESCRIPTION = ?, BRAND = ?, PRICE = ?, AVAILABLE = ?, THUMBNAIL = ?, CATEGORY_ID = ? WHERE ID = ?";
     private static final String SQL_DELETE = "DELETE FROM PRODUCT WHERE ID = ?";
 
+    private static void rollbackTransaction(Connection connection) {
+        if (connection != null) {
+            try {
+                connection.rollback();
+                LOGGER.debug("✔ Transaction rolled back successfully.");
+            } catch (SQLException ex) {
+                LOGGER.error("✘ Error rolling back transaction: {}", ex.getMessage());
+            }
+        }
+    }
+
     @Override
     public Product save(Product product) {
         Connection connection = null;
@@ -192,17 +203,6 @@ public class ProductDaoH2 implements IDao<Product> {
                 resultSet.getString("THUMBNAIL"),
                 resultSet.getLong("CATEGORY_ID")
         );
-    }
-
-    private static void rollbackTransaction(Connection connection) {
-        if (connection != null) {
-            try {
-                connection.rollback();
-                LOGGER.debug("✔ Transaction rolled back successfully.");
-            } catch (SQLException ex) {
-                LOGGER.error("✘ Error rolling back transaction: {}", ex.getMessage());
-            }
-        }
     }
 
     private void closeResources(ResultSet resultSet, PreparedStatement preparedStatement, Connection connection) {
