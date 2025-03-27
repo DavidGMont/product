@@ -111,6 +111,32 @@ public class ProductServlet extends HttpServlet {
         out.flush();
     }
 
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.setContentType("application/json");
+        PrintWriter out = resp.getWriter();
+
+        String pathInfo = req.getPathInfo();
+
+        try {
+            if (verifyProductId(resp, pathInfo, out)) return;
+            Long id = Long.parseLong(pathInfo.substring(1));
+            if (verifyProductExistence(resp, id, out)) return;
+
+            productService.delete(id);
+
+            resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+        } catch (NumberFormatException e) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            out.print("{\"error\": \"Invalid product ID.\"}");
+        } catch (Exception e) {
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            out.print("{\"error\": \"" + e.getMessage() + "\"}");
+        }
+
+        out.flush();
+    }
+
     private static boolean verifyProductId(HttpServletResponse resp, String pathInfo, PrintWriter out) {
         if (pathInfo == null || pathInfo.equals("/")) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
