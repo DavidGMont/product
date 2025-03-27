@@ -75,4 +75,59 @@ public class ProductServlet extends HttpServlet {
 
         out.flush();
     }
+
+    @Override
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.setContentType("application/json");
+        PrintWriter out = resp.getWriter();
+
+        String pathInfo = req.getPathInfo();
+
+        try {
+            if (verifyProductId(resp, pathInfo, out)) return;
+            Long id = Long.parseLong(pathInfo.substring(1));
+            if (verifyProductExistence(resp, id, out)) return;
+
+            Product updatedProduct = gson.fromJson(req.getReader(), Product.class);
+            updatedProduct.setId(id);
+
+            Product result = productService.update(updatedProduct);
+
+            if (result != null) {
+                resp.setStatus(HttpServletResponse.SC_OK);
+                out.print(gson.toJson(result));
+            } else {
+                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                out.print("{\"error\": \"Failed to update product.\"}");
+            }
+        } catch (NumberFormatException e) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            out.print("{\"error\": \"Invalid product ID.\"}");
+        } catch (Exception e) {
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            out.print("{\"error\": \"" + e.getMessage() + "\"}");
+        }
+
+        out.flush();
+    }
+
+    private static boolean verifyProductId(HttpServletResponse resp, String pathInfo, PrintWriter out) {
+        if (pathInfo == null || pathInfo.equals("/")) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            out.print("{\"error\": \"Product ID is required.\"}");
+            return true;
+        }
+        return false;
+    }
+
+    private boolean verifyProductExistence(HttpServletResponse resp, Long id, PrintWriter out) {
+        try {
+            productService.findById(id);
+        } catch (ProductNotFoundException e) {
+            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            out.print("{\"error\": \"Product not found.\"}");
+            return true;
+        }
+        return false;
+    }
 }
