@@ -111,7 +111,7 @@ class ProductServiceTest {
     void givenANonExistingProductId_whenFoundById_thenItShouldThrowProductNotFoundException() {
         assertThatThrownBy(() -> productService.findById(11L))
                 .isInstanceOf(ProductNotFoundException.class)
-                .hasMessage("Product not found with ID: 11");
+                .hasMessage("✘ Product not found with ID: 11");
         LOGGER.info("\n✔ The expected exception was thrown when the product was not found.");
     }
 
