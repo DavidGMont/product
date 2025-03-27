@@ -14,6 +14,7 @@ import java.util.List;
 public class ProductDaoH2 implements IDao<Product> {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final String SQL_INSERT = "INSERT INTO PRODUCT (NAME, DESCRIPTION, BRAND, PRICE, AVAILABLE, THUMBNAIL, CATEGORY_ID) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    private static final String SQL_SELECT_BY_ID = "SELECT * FROM PRODUCT WHERE ID = ?";
 
     @Override
     public Product save(Product product) {
@@ -54,31 +55,27 @@ public class ProductDaoH2 implements IDao<Product> {
     @Override
     public Product findById(Long id) {
         Connection connection = null;
-        Product product = null;
-        String query = "SELECT * FROM PRODUCT WHERE ID = ?";
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
 
         try {
             connection = DBConnection.getConnection();
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement = connection.prepareStatement(SQL_SELECT_BY_ID);
             preparedStatement.setLong(1, id);
 
-            ResultSet resultSet = preparedStatement.executeQuery();
+            resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
-                product = mapProduct(resultSet);
+                Product product = mapResultSetToProduct(resultSet);
                 LOGGER.debug("✔ Product found successfully: \n{}", product);
                 return product;
             }
         } catch (Exception e) {
-            LOGGER.error("✘ Error establishing connection: {}", e.getMessage());
+            LOGGER.error("✘ Error finding product by ID: {}", e.getMessage());
         } finally {
-            closeConnection(connection);
+            closeResources(resultSet, preparedStatement, connection);
         }
 
-        if (product == null) {
-            throw new ProductNotFoundException("Product not found with ID: " + id);
-        }
-
-        return product;
+        throw new ProductNotFoundException("✘ Product not found with ID: " + id);
     }
 
     @Override
@@ -176,7 +173,7 @@ public class ProductDaoH2 implements IDao<Product> {
         preparedStatement.setLong(7, product.getCategoryId());
     }
 
-    private Product mapProduct(ResultSet resultSet) throws SQLException {
+    private Product mapResultSetToProduct(ResultSet resultSet) throws SQLException {
         return new Product(
                 resultSet.getLong("ID"),
                 resultSet.getString("NAME"),
