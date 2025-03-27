@@ -16,6 +16,7 @@ public class ProductDaoH2 implements IDao<Product> {
     private static final String SQL_INSERT = "INSERT INTO PRODUCT (NAME, DESCRIPTION, BRAND, PRICE, AVAILABLE, THUMBNAIL, CATEGORY_ID) VALUES (?, ?, ?, ?, ?, ?, ?)";
     private static final String SQL_SELECT_BY_ID = "SELECT * FROM PRODUCT WHERE ID = ?";
     private static final String SQL_SELECT_ALL = "SELECT * FROM PRODUCT";
+    private static final String SQL_UPDATE = "UPDATE PRODUCT SET NAME = ?, DESCRIPTION = ?, BRAND = ?, PRICE = ?, AVAILABLE = ?, THUMBNAIL = ?, CATEGORY_ID = ? WHERE ID = ?";
 
     @Override
     public Product save(Product product) {
@@ -114,32 +115,32 @@ public class ProductDaoH2 implements IDao<Product> {
     @Override
     public Product update(Product product) {
         Connection connection = null;
-        String query = "UPDATE PRODUCT SET NAME = ?, DESCRIPTION = ?, BRAND = ?, PRICE = ?, AVAILABLE = ?, THUMBNAIL = ?, CATEGORY_ID = ? WHERE ID = ?";
+        PreparedStatement preparedStatement = null;
 
         try {
             connection = DBConnection.getConnection();
             connection.setAutoCommit(false);
 
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement = connection.prepareStatement(SQL_UPDATE);
             setData(product, preparedStatement);
             preparedStatement.setLong(8, product.getId());
 
             int updatedRows = preparedStatement.executeUpdate();
             if (updatedRows > 0) {
+                connection.commit();
                 LOGGER.debug("✔ Product updated successfully: \n{}", product);
+                return product;
             } else {
-                LOGGER.warn("✘ Product not found: {}", product.getId());
+                LOGGER.warn("✘ No product found to update with ID: {}", product.getId());
+                return null;
             }
-
-            connection.commit();
         } catch (Exception e) {
             LOGGER.error("✘ Error updating product: {}", e.getMessage());
             rollbackTransaction(connection);
+            return null;
         } finally {
-            closeConnection(connection);
+            closeResources(null, preparedStatement, connection);
         }
-
-        return product;
     }
 
     @Override
