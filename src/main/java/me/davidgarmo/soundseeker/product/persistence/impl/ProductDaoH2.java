@@ -30,7 +30,7 @@ public class ProductDaoH2 implements IDao<Product> {
             connection.setAutoCommit(false);
 
             preparedStatement = connection.prepareStatement(SQL_INSERT, Statement.RETURN_GENERATED_KEYS);
-            setData(product, preparedStatement);
+            mapProductToPreparedStatement(product, preparedStatement);
 
             int affectedRows = preparedStatement.executeUpdate();
             if (affectedRows == 0) {
@@ -123,7 +123,7 @@ public class ProductDaoH2 implements IDao<Product> {
             connection.setAutoCommit(false);
 
             preparedStatement = connection.prepareStatement(SQL_UPDATE);
-            setData(product, preparedStatement);
+            mapProductToPreparedStatement(product, preparedStatement);
             preparedStatement.setLong(8, product.getId());
 
             int updatedRows = preparedStatement.executeUpdate();
@@ -171,7 +171,7 @@ public class ProductDaoH2 implements IDao<Product> {
         }
     }
 
-    private void setData(Product product, PreparedStatement preparedStatement) throws SQLException {
+    private void mapProductToPreparedStatement(Product product, PreparedStatement preparedStatement) throws SQLException {
         preparedStatement.setString(1, product.getName());
         preparedStatement.setString(2, product.getDescription());
         preparedStatement.setString(3, product.getBrand());
