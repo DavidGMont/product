@@ -12,38 +12,43 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ProductDaoH2 implements IDao<Product> {
-
     private static final Logger LOGGER = LogManager.getLogger();
+    private static final String SQL_INSERT = "INSERT INTO PRODUCT (NAME, DESCRIPTION, BRAND, PRICE, AVAILABLE, THUMBNAIL, CATEGORY_ID) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
     @Override
     public Product save(Product product) {
         Connection connection = null;
-        String query = "INSERT INTO PRODUCT (NAME, DESCRIPTION, BRAND, PRICE, AVAILABLE, THUMBNAIL, CATEGORY_ID) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        PreparedStatement preparedStatement = null;
+        ResultSet generatedKeys = null;
 
         try {
             connection = DBConnection.getConnection();
             connection.setAutoCommit(false);
 
-            PreparedStatement preparedStatement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            preparedStatement = connection.prepareStatement(SQL_INSERT, Statement.RETURN_GENERATED_KEYS);
             setData(product, preparedStatement);
 
-            preparedStatement.executeUpdate();
-
-            ResultSet keys = preparedStatement.getGeneratedKeys();
-            if (keys.next()) {
-                product.setId(keys.getLong(1));
+            int affectedRows = preparedStatement.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("✘ Creating product failed, no rows affected.");
             }
 
-            connection.commit();
-            LOGGER.debug("✔ Product saved successfully: \n{}", product);
+            generatedKeys = preparedStatement.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                product.setId(generatedKeys.getLong(1));
+                connection.commit();
+                LOGGER.debug("✔ Product saved successfully: \n{}", product);
+                return product;
+            } else {
+                throw new SQLException("✘ Creating product failed, no ID obtained.");
+            }
         } catch (Exception e) {
             LOGGER.error("✘ Error saving product: {}", e.getMessage());
             rollbackTransaction(connection);
+            return null;
         } finally {
-            closeConnection(connection);
+            closeResources(generatedKeys, preparedStatement, connection);
         }
-
-        return product;
     }
 
     @Override
@@ -184,24 +189,42 @@ public class ProductDaoH2 implements IDao<Product> {
         );
     }
 
-    private void rollbackTransaction(Connection connection) {
+    private static void rollbackTransaction(Connection connection) {
         if (connection != null) {
             try {
                 connection.rollback();
-                LOGGER.debug("Transaction rolled back successfully.");
+                LOGGER.debug("✔ Transaction rolled back successfully.");
             } catch (SQLException ex) {
-                LOGGER.error("Error rolling back transaction: {}", ex.getMessage());
+                LOGGER.error("✘ Error rolling back transaction: {}", ex.getMessage());
             }
         }
     }
 
-    private void closeConnection(Connection connection) {
+    private void closeResources(ResultSet resultSet, PreparedStatement preparedStatement, Connection connection) {
+        if (resultSet != null) {
+            try {
+                resultSet.close();
+            } catch (SQLException e) {
+                LOGGER.error("✘ Error closing ResultSet: {}", e.getMessage());
+            }
+        }
+
+        if (preparedStatement != null) {
+            try {
+                preparedStatement.close();
+            } catch (SQLException e) {
+                LOGGER.error("✘ Error closing PreparedStatement: {}", e.getMessage());
+            }
+        }
+
         if (connection != null) {
             try {
+                if (!connection.getAutoCommit()) {
+                    connection.setAutoCommit(true);
+                }
                 connection.close();
-                LOGGER.debug("✔ Connection closed successfully.");
             } catch (SQLException e) {
-                LOGGER.error("✘ Error closing connection: {}", e.getMessage());
+                LOGGER.error("✘ Error closing Connection: {}", e.getMessage());
             }
         }
     }
