@@ -57,4 +57,22 @@ public class ProductServlet extends HttpServlet {
 
         out.flush();
     }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.setContentType("application/json");
+        PrintWriter out = resp.getWriter();
+        Product product = gson.fromJson(req.getReader(), Product.class);
+
+        try {
+            Product savedProduct = productService.save(product);
+            resp.setStatus(HttpServletResponse.SC_CREATED);
+            out.print(gson.toJson(savedProduct));
+        } catch (Exception e) {
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            out.print("{\"error\": \"" + e.getMessage() + "\"}");
+        }
+
+        out.flush();
+    }
 }
