@@ -15,6 +15,7 @@ public class ProductDaoH2 implements IDao<Product> {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final String SQL_INSERT = "INSERT INTO PRODUCT (NAME, DESCRIPTION, BRAND, PRICE, AVAILABLE, THUMBNAIL, CATEGORY_ID) VALUES (?, ?, ?, ?, ?, ?, ?)";
     private static final String SQL_SELECT_BY_ID = "SELECT * FROM PRODUCT WHERE ID = ?";
+    private static final String SQL_SELECT_ALL = "SELECT * FROM PRODUCT";
 
     @Override
     public Product save(Product product) {
@@ -80,25 +81,31 @@ public class ProductDaoH2 implements IDao<Product> {
 
     @Override
     public List<Product> findAll() {
-        Connection connection = null;
         List<Product> products = new ArrayList<>();
-        String query = "SELECT * FROM PRODUCT";
+        Connection connection = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
 
         try {
             connection = DBConnection.getConnection();
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            statement = connection.createStatement();
+            resultSet = statement.executeQuery(SQL_SELECT_ALL);
 
-            ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
-                products.add(mapProduct(resultSet));
+                products.add(mapResultSetToProduct(resultSet));
             }
-
-            LOGGER.debug("✔ Products found successfully: \n{}", products);
-            return products;
+            LOGGER.debug("✔ Found {} products successfully", products.size());
         } catch (Exception e) {
-            LOGGER.error("✘ Error establishing connection: {}", e.getMessage());
+            LOGGER.error("✘ Error finding all products: {}", e.getMessage());
         } finally {
-            closeConnection(connection);
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    LOGGER.error("✘ Error closing Statement: {}", e.getMessage());
+                }
+            }
+            closeResources(resultSet, null, connection);
         }
 
         return products;
