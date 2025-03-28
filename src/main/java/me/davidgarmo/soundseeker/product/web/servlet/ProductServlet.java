@@ -36,7 +36,7 @@ public class ProductServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setContentType("application/json");
+        resp.setContentType("application/json; charset=UTF-8");
         PrintWriter out = resp.getWriter();
         String pathInfo = req.getPathInfo();
 
@@ -69,7 +69,7 @@ public class ProductServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setContentType("application/json");
+        resp.setContentType("application/json; charset=UTF-8");
         PrintWriter out = resp.getWriter();
         Product product = gson.fromJson(req.getReader(), Product.class);
 
@@ -87,7 +87,7 @@ public class ProductServlet extends HttpServlet {
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setContentType("application/json");
+        resp.setContentType("application/json; charset=UTF-8");
         PrintWriter out = resp.getWriter();
 
         String pathInfo = req.getPathInfo();
@@ -122,7 +122,7 @@ public class ProductServlet extends HttpServlet {
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setContentType("application/json");
+        resp.setContentType("application/json; charset=UTF-8");
         PrintWriter out = resp.getWriter();
 
         String pathInfo = req.getPathInfo();
