@@ -10,7 +10,7 @@ import java.sql.SQLException;
 
 public class DBConnection {
     private static final Logger LOGGER = LogManager.getLogger();
-    private static final String URL = "jdbc:h2:~/soundseeker-product;INIT=RUNSCRIPT FROM 'create.sql'";
+    private static final String URL = "jdbc:h2:~/soundseeker-product";
     private static final String USER = "sa";
     private static final String PASSWORD = "sa";
 
@@ -34,6 +34,22 @@ public class DBConnection {
 
         dataSource = new HikariDataSource(config);
         LOGGER.info("✔ Connection pool initialized successfully.");
+        initializeDatabaseIfNeeded();
+    }
+
+    private static void initializeDatabaseIfNeeded() {
+        try (Connection connection = dataSource.getConnection()) {
+            try {
+                connection.createStatement().execute("SELECT 1 FROM PRODUCT LIMIT 1");
+                LOGGER.info("✔ Database tables already exist, skipping initialization.");
+            } catch (SQLException e) {
+                LOGGER.info("✔ Initializing database tables...");
+                connection.createStatement().execute("RUNSCRIPT FROM 'create.sql'");
+                LOGGER.info("✔ Database tables initialized successfully.");
+            }
+        } catch (SQLException e) {
+            LOGGER.error("✘ Error checking or initializing database: {}", e.getMessage());
+        }
     }
 
     public static Connection getConnection() throws SQLException {
