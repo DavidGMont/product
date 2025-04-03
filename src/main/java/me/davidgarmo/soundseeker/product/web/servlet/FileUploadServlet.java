@@ -89,6 +89,21 @@ public class FileUploadServlet extends HttpServlet {
                     return;
                 }
 
+                byte[] fileStart = new byte[12];
+                try (InputStream inputStream = part.getInputStream()) {
+                    int bytesRead = inputStream.read(fileStart, 0, fileStart.length);
+                    if (bytesRead < 4) {
+                        sendErrorResponse(response, "File is too small to be a valid image.");
+                        return;
+                    }
+
+                    if (!isValidFileContent(fileStart, extension)) {
+                        LOGGER.warn("File content does not match the expected signature for extension: {}.", extension);
+                        sendErrorResponse(response, "File content does not match with the declared extension.");
+                        return;
+                    }
+                }
+
                 long timestamp = System.currentTimeMillis();
                 fileName = timestamp + "." + extension;
 
@@ -146,6 +161,35 @@ public class FileUploadServlet extends HttpServlet {
             return false;
         }
         return ALLOWED_MIME_TYPES.contains(mimeType.toLowerCase());
+    }
+
+    private boolean isValidFileContent(byte[] fileStart, String extension) {
+        byte[][] signatures = FILE_SIGNATURES.get(extension.toLowerCase());
+        if (signatures == null) return false;
+
+        for (byte[] signature : signatures) {
+            boolean match = true;
+            if (extension.equalsIgnoreCase("webp")) {
+                if (fileStart.length < 12) return false;
+                if (!(fileStart[0] == signature[0] && fileStart[1] == signature[1] && fileStart[2] == signature[2] && fileStart[3] == signature[3])) {
+                    continue;
+                }
+                if (!(fileStart[8] == signature[8] && fileStart[9] == signature[9] && fileStart[10] == signature[10] && fileStart[11] == signature[11])) {
+                    continue;
+                }
+                return true;
+            } else {
+                for (int i = 0; i < signature.length; i++) {
+                    if (i >= fileStart.length || fileStart[i] != signature[i]) {
+                        match = false;
+                        break;
+                    }
+                }
+                if (match) return true;
+            }
+        }
+
+        return false;
     }
 
     private void sendErrorResponse(HttpServletResponse response, String message) throws IOException {
