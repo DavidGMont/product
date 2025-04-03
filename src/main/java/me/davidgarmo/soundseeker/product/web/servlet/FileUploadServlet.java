@@ -7,6 +7,8 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -19,6 +21,7 @@ import java.util.Set;
 @WebServlet("/api/v1/upload")
 @MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 1024 * 1024 * 10, maxRequestSize = 1024 * 1024 * 50)
 public class FileUploadServlet extends HttpServlet {
+    private static final Logger LOGGER = LogManager.getLogger();
     private static final String UPLOAD_DIR = "uploads";
     private static final Set<String> ALLOWED_EXTENSIONS = new HashSet<>(
             Arrays.asList("jpg", "jpeg", "png", "webp", "gif"));
@@ -51,18 +54,13 @@ public class FileUploadServlet extends HttpServlet {
                 String extension = getFileExtension(originalFileName);
 
                 if (!isValidExtension(extension)) {
-                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    response.setContentType("application/json");
-                    response.getWriter().print("{\"success\": false, \"error\": \"Invalid file extension. Allowed: "
-                            + String.join(", ", ALLOWED_EXTENSIONS) + "\"}");
+                    sendErrorResponse(response, "File type not permitted. Allowed types: " + String.join(", ", ALLOWED_EXTENSIONS) + ".");
                     return;
                 }
 
                 String contentType = part.getContentType();
                 if (!isValidMimeType(contentType)) {
-                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    response.setContentType("application/json");
-                    response.getWriter().print("{\"success\": false, \"error\": \"File type not permitted: " + contentType + "\"}");
+                    sendErrorResponse(response, "File type not permitted. Invalid MIME type: " + contentType + ".");
                     return;
                 }
 
@@ -80,9 +78,7 @@ public class FileUploadServlet extends HttpServlet {
             }
 
             if (fileName.isEmpty()) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.setContentType("application/json");
-                response.getWriter().print("{\"success\": false, \"error\": \"No file uploaded.\"}");
+                sendErrorResponse(response, "No file uploaded.");
                 return;
             }
 
@@ -94,9 +90,8 @@ public class FileUploadServlet extends HttpServlet {
                     + "\", \"originalFileName\": \"" + originalFileName + "\"}");
 
         } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.setContentType("application/json");
-            response.getWriter().print("{\"success\": false, \"error\": \"" + e.getMessage() + "\"}");
+            LOGGER.fatal("Error uploading file: {}", e.getMessage());
+            sendErrorResponse(response, "An error occurred while uploading the file: " + e.getMessage());
         }
     }
 
@@ -126,5 +121,11 @@ public class FileUploadServlet extends HttpServlet {
             return false;
         }
         return ALLOWED_MIME_TYPES.contains(mimeType.toLowerCase());
+    }
+
+    private void sendErrorResponse(HttpServletResponse response, String message) throws IOException {
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        response.setContentType("application/json");
+        response.getWriter().print("{\"success\": false, \"error\": \"" + message + "\"}");
     }
 }
