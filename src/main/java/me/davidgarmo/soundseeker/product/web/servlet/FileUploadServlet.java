@@ -14,9 +14,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @WebServlet("/api/v1/upload")
 @MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 1024 * 1024 * 10, maxRequestSize = 1024 * 1024 * 50)
@@ -24,13 +22,40 @@ public class FileUploadServlet extends HttpServlet {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final String UPLOAD_DIR = "uploads";
     private static final Set<String> ALLOWED_EXTENSIONS = new HashSet<>(
-            Arrays.asList("jpg", "jpeg", "png", "webp", "gif"));
+            Arrays.asList("gif", "jpg", "jpeg", "png", "webp"));
     private static final Set<String> ALLOWED_MIME_TYPES = new HashSet<>(
             Arrays.asList(
+                    "image/gif",
                     "image/jpeg",
                     "image/png",
-                    "image/webp",
-                    "image/gif"));
+                    "image/webp"));
+    private static final Map<String, byte[][]> FILE_SIGNATURES = new HashMap<>();
+
+    static {
+        FILE_SIGNATURES.put("gif", new byte[][]{
+                {(byte) 0x47, (byte) 0x49, (byte) 0x46, (byte) 0x38, (byte) 0x37, (byte) 0x61},
+                {(byte) 0x47, (byte) 0x49, (byte) 0x46, (byte) 0x38, (byte) 0x39, (byte) 0x61}
+        });
+
+        FILE_SIGNATURES.put("jpg", new byte[][]{
+                {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0},
+                {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE1},
+                {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE2},
+                {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE3},
+                {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xEE},
+                {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xDB}
+        });
+
+        FILE_SIGNATURES.put("jpeg", FILE_SIGNATURES.get("jpg"));
+
+        FILE_SIGNATURES.put("png", new byte[][]{
+                {(byte) 0x89, (byte) 0x50, (byte) 0x4E, (byte) 0x47}}
+        );
+
+        FILE_SIGNATURES.put("webp", new byte[][]{
+                {(byte) 0x52, (byte) 0x49, (byte) 0x46, (byte) 0x46, 0, 0, 0, 0, (byte) 0x57, (byte) 0x45, (byte) 0x42, (byte) 0x50}
+        });
+    }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
