@@ -64,6 +64,8 @@ public class Application {
                 addURLPattern("/*");
             }});
 
+            Tomcat.initWebappDefaults(context);
+
             tomcat.start();
             LOGGER.info("🚀 Tomcat server started on port 8080.");
 
