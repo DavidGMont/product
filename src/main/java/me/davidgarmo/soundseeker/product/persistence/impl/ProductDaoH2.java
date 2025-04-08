@@ -12,91 +12,113 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ProductDaoH2 implements IDao<Product> {
-
     private static final Logger LOGGER = LogManager.getLogger();
+    private static final String SQL_INSERT = "INSERT INTO PRODUCT (NAME, DESCRIPTION, BRAND, PRICE, AVAILABLE, THUMBNAIL, CATEGORY_ID) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    private static final String SQL_SELECT_BY_ID = "SELECT * FROM PRODUCT WHERE ID = ?";
+    private static final String SQL_SELECT_ALL = "SELECT * FROM PRODUCT";
+    private static final String SQL_UPDATE = "UPDATE PRODUCT SET NAME = ?, DESCRIPTION = ?, BRAND = ?, PRICE = ?, AVAILABLE = ?, THUMBNAIL = ?, CATEGORY_ID = ? WHERE ID = ?";
+    private static final String SQL_DELETE = "DELETE FROM PRODUCT WHERE ID = ?";
+
+    private static void rollbackTransaction(Connection connection) {
+        if (connection != null) {
+            try {
+                connection.rollback();
+                LOGGER.debug("✔ Transaction rolled back successfully.");
+            } catch (SQLException ex) {
+                LOGGER.error("✘ Error rolling back transaction: {}", ex.getMessage());
+            }
+        }
+    }
 
     @Override
     public Product save(Product product) {
         Connection connection = null;
-        String query = "INSERT INTO PRODUCT (NAME, DESCRIPTION, BRAND, PRICE, AVAILABLE, THUMBNAIL, CATEGORY_ID) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        PreparedStatement preparedStatement = null;
+        ResultSet generatedKeys = null;
 
         try {
             connection = DBConnection.getConnection();
             connection.setAutoCommit(false);
 
-            PreparedStatement preparedStatement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            setData(product, preparedStatement);
+            preparedStatement = connection.prepareStatement(SQL_INSERT, Statement.RETURN_GENERATED_KEYS);
+            mapProductToPreparedStatement(product, preparedStatement);
 
-            preparedStatement.executeUpdate();
-
-            ResultSet keys = preparedStatement.getGeneratedKeys();
-            if (keys.next()) {
-                product.setId(keys.getLong(1));
+            int affectedRows = preparedStatement.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("✘ Creating product failed, no rows affected.");
             }
 
-            connection.commit();
-            LOGGER.debug("✔ Product saved successfully: \n{}", product);
+            generatedKeys = preparedStatement.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                product.setId(generatedKeys.getLong(1));
+                connection.commit();
+                LOGGER.debug("✔ Product saved successfully: \n{}", product);
+                return product;
+            } else {
+                throw new SQLException("✘ Creating product failed, no ID obtained.");
+            }
         } catch (Exception e) {
             LOGGER.error("✘ Error saving product: {}", e.getMessage());
             rollbackTransaction(connection);
+            return null;
         } finally {
-            closeConnection(connection);
+            closeResources(generatedKeys, preparedStatement, connection);
         }
-
-        return product;
     }
 
     @Override
     public Product findById(Long id) {
         Connection connection = null;
-        Product product = null;
-        String query = "SELECT * FROM PRODUCT WHERE ID = ?";
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
 
         try {
             connection = DBConnection.getConnection();
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement = connection.prepareStatement(SQL_SELECT_BY_ID);
             preparedStatement.setLong(1, id);
 
-            ResultSet resultSet = preparedStatement.executeQuery();
+            resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
-                product = mapProduct(resultSet);
+                Product product = mapResultSetToProduct(resultSet);
                 LOGGER.debug("✔ Product found successfully: \n{}", product);
                 return product;
             }
         } catch (Exception e) {
-            LOGGER.error("✘ Error establishing connection: {}", e.getMessage());
+            LOGGER.error("✘ Error finding product by ID: {}", e.getMessage());
         } finally {
-            closeConnection(connection);
+            closeResources(resultSet, preparedStatement, connection);
         }
 
-        if (product == null) {
-            throw new ProductNotFoundException("Product not found with ID: " + id);
-        }
-
-        return product;
+        throw new ProductNotFoundException("✘ Product not found with ID: " + id);
     }
 
     @Override
     public List<Product> findAll() {
-        Connection connection = null;
         List<Product> products = new ArrayList<>();
-        String query = "SELECT * FROM PRODUCT";
+        Connection connection = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
 
         try {
             connection = DBConnection.getConnection();
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            statement = connection.createStatement();
+            resultSet = statement.executeQuery(SQL_SELECT_ALL);
 
-            ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
-                products.add(mapProduct(resultSet));
+                products.add(mapResultSetToProduct(resultSet));
             }
-
-            LOGGER.debug("✔ Products found successfully: \n{}", products);
-            return products;
+            LOGGER.debug("✔ Found {} products successfully", products.size());
         } catch (Exception e) {
-            LOGGER.error("✘ Error establishing connection: {}", e.getMessage());
+            LOGGER.error("✘ Error finding all products: {}", e.getMessage());
         } finally {
-            closeConnection(connection);
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    LOGGER.error("✘ Error closing Statement: {}", e.getMessage());
+                }
+            }
+            closeResources(resultSet, null, connection);
         }
 
         return products;
@@ -105,63 +127,62 @@ public class ProductDaoH2 implements IDao<Product> {
     @Override
     public Product update(Product product) {
         Connection connection = null;
-        String query = "UPDATE PRODUCT SET NAME = ?, DESCRIPTION = ?, BRAND = ?, PRICE = ?, AVAILABLE = ?, THUMBNAIL = ?, CATEGORY_ID = ? WHERE ID = ?";
+        PreparedStatement preparedStatement = null;
 
         try {
             connection = DBConnection.getConnection();
             connection.setAutoCommit(false);
 
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-            setData(product, preparedStatement);
+            preparedStatement = connection.prepareStatement(SQL_UPDATE);
+            mapProductToPreparedStatement(product, preparedStatement);
             preparedStatement.setLong(8, product.getId());
 
             int updatedRows = preparedStatement.executeUpdate();
             if (updatedRows > 0) {
+                connection.commit();
                 LOGGER.debug("✔ Product updated successfully: \n{}", product);
+                return product;
             } else {
-                LOGGER.warn("✘ Product not found: {}", product.getId());
+                LOGGER.warn("✘ No product found to update with ID: {}", product.getId());
+                return null;
             }
-
-            connection.commit();
         } catch (Exception e) {
             LOGGER.error("✘ Error updating product: {}", e.getMessage());
             rollbackTransaction(connection);
+            return null;
         } finally {
-            closeConnection(connection);
+            closeResources(null, preparedStatement, connection);
         }
-
-        return product;
     }
 
     @Override
     public void delete(Long id) {
         Connection connection = null;
-        String query = "DELETE FROM PRODUCT WHERE ID = ?";
+        PreparedStatement preparedStatement = null;
 
         try {
             connection = DBConnection.getConnection();
             connection.setAutoCommit(false);
 
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement = connection.prepareStatement(SQL_DELETE);
             preparedStatement.setLong(1, id);
 
             int deletedRows = preparedStatement.executeUpdate();
             if (deletedRows > 0) {
+                connection.commit();
                 LOGGER.debug("✔ Product deleted successfully: {}", id);
             } else {
-                LOGGER.warn("✘ Product not found: {}", id);
+                LOGGER.warn("✘ No product found to delete with ID: {}", id);
             }
-
-            connection.commit();
         } catch (Exception e) {
             LOGGER.error("✘ Error deleting product: {}", e.getMessage());
             rollbackTransaction(connection);
         } finally {
-            closeConnection(connection);
+            closeResources(null, preparedStatement, connection);
         }
     }
 
-    private void setData(Product product, PreparedStatement preparedStatement) throws SQLException {
+    private void mapProductToPreparedStatement(Product product, PreparedStatement preparedStatement) throws SQLException {
         preparedStatement.setString(1, product.getName());
         preparedStatement.setString(2, product.getDescription());
         preparedStatement.setString(3, product.getBrand());
@@ -171,7 +192,7 @@ public class ProductDaoH2 implements IDao<Product> {
         preparedStatement.setLong(7, product.getCategoryId());
     }
 
-    private Product mapProduct(ResultSet resultSet) throws SQLException {
+    private Product mapResultSetToProduct(ResultSet resultSet) throws SQLException {
         return new Product(
                 resultSet.getLong("ID"),
                 resultSet.getString("NAME"),
@@ -184,24 +205,31 @@ public class ProductDaoH2 implements IDao<Product> {
         );
     }
 
-    private void rollbackTransaction(Connection connection) {
-        if (connection != null) {
+    private void closeResources(ResultSet resultSet, PreparedStatement preparedStatement, Connection connection) {
+        if (resultSet != null) {
             try {
-                connection.rollback();
-                LOGGER.debug("Transaction rolled back successfully.");
-            } catch (SQLException ex) {
-                LOGGER.error("Error rolling back transaction: {}", ex.getMessage());
+                resultSet.close();
+            } catch (SQLException e) {
+                LOGGER.error("✘ Error closing ResultSet: {}", e.getMessage());
             }
         }
-    }
 
-    private void closeConnection(Connection connection) {
+        if (preparedStatement != null) {
+            try {
+                preparedStatement.close();
+            } catch (SQLException e) {
+                LOGGER.error("✘ Error closing PreparedStatement: {}", e.getMessage());
+            }
+        }
+
         if (connection != null) {
             try {
+                if (!connection.getAutoCommit()) {
+                    connection.setAutoCommit(true);
+                }
                 connection.close();
-                LOGGER.debug("✔ Connection closed successfully.");
             } catch (SQLException e) {
-                LOGGER.error("✘ Error closing connection: {}", e.getMessage());
+                LOGGER.error("✘ Error closing Connection: {}", e.getMessage());
             }
         }
     }

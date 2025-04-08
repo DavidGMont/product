@@ -23,6 +23,31 @@ class ProductServiceTest {
     static final Logger LOGGER = LogManager.getLogger();
     ProductService productService;
 
+    private static AsciiTable getTable(Product originalProduct, Product updatedProduct) {
+        AsciiTable table = new AsciiTable();
+        table.addRule();
+        table.addRow("Field", "Original", "Updated");
+        table.addRule();
+        table.addRow("ID", originalProduct.getId(), updatedProduct.getId());
+        table.addRule();
+        table.addRow("Name", originalProduct.getName(), updatedProduct.getName());
+        table.addRule();
+        table.addRow("Description", originalProduct.getDescription(), updatedProduct.getDescription());
+        table.addRule();
+        table.addRow("Brand", originalProduct.getBrand(), updatedProduct.getBrand());
+        table.addRule();
+        table.addRow("Price", originalProduct.getPrice(), updatedProduct.getPrice());
+        table.addRule();
+        table.addRow("Available", originalProduct.getAvailable(), updatedProduct.getAvailable());
+        table.addRule();
+        table.addRow("Thumbnail", originalProduct.getThumbnail(), updatedProduct.getThumbnail());
+        table.addRule();
+        table.addRow("Category ID", originalProduct.getCategoryId(), updatedProduct.getCategoryId());
+        table.addRule();
+        table.setTextAlignment(TextAlignment.LEFT);
+        return table;
+    }
+
     @BeforeEach
     void setUp() {
         try (Connection connection = DBConnection.getConnection()) {
@@ -86,7 +111,7 @@ class ProductServiceTest {
     void givenANonExistingProductId_whenFoundById_thenItShouldThrowProductNotFoundException() {
         assertThatThrownBy(() -> productService.findById(11L))
                 .isInstanceOf(ProductNotFoundException.class)
-                .hasMessage("Product not found with ID: 11");
+                .hasMessage("✘ Product not found with ID: 11");
         LOGGER.info("\n✔ The expected exception was thrown when the product was not found.");
     }
 
@@ -116,7 +141,7 @@ class ProductServiceTest {
             try (Statement statement = connection.createStatement()) {
                 statement.execute("DELETE FROM PRODUCT");
             }
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
 
@@ -174,30 +199,5 @@ class ProductServiceTest {
 
         assertThat(finalCount).isEqualTo(initialCount - 1);
         LOGGER.info("\n✔ The product was deleted successfully and the record count decreased by 1.");
-    }
-
-    private static AsciiTable getTable(Product originalProduct, Product updatedProduct) {
-        AsciiTable table = new AsciiTable();
-        table.addRule();
-        table.addRow("Field", "Original", "Updated");
-        table.addRule();
-        table.addRow("ID", originalProduct.getId(), updatedProduct.getId());
-        table.addRule();
-        table.addRow("Name", originalProduct.getName(), updatedProduct.getName());
-        table.addRule();
-        table.addRow("Description", originalProduct.getDescription(), updatedProduct.getDescription());
-        table.addRule();
-        table.addRow("Brand", originalProduct.getBrand(), updatedProduct.getBrand());
-        table.addRule();
-        table.addRow("Price", originalProduct.getPrice(), updatedProduct.getPrice());
-        table.addRule();
-        table.addRow("Available", originalProduct.getAvailable(), updatedProduct.getAvailable());
-        table.addRule();
-        table.addRow("Thumbnail", originalProduct.getThumbnail(), updatedProduct.getThumbnail());
-        table.addRule();
-        table.addRow("Category ID", originalProduct.getCategoryId(), updatedProduct.getCategoryId());
-        table.addRule();
-        table.setTextAlignment(TextAlignment.LEFT);
-        return table;
     }
 }
