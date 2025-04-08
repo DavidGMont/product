@@ -1,0 +1,314 @@
+<!doctype html>
+<html class="no-js" lang="es" data-theme="light">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Panel de Administración | SoundSeeker | Reservá tu melodía perfecta</title>
+        <meta name="color-scheme" content="light dark" />
+        <link rel="stylesheet" href="css/pico.min.css" />
+        <link rel="stylesheet" href="css/header-footer.css" />
+        <link rel="stylesheet" href="css/limit.css" />
+        <link rel="stylesheet" href="css/admin.css" />
+        <meta name="description" content="SoundSeeker | Reservá tu melodía perfecta" />
+
+        <meta property="og:title" content="SoundSeeker | Reservá tu melodía perfecta" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="http://davidgarmo.me/" />
+        <meta property="og:image" content="img/drums.webp" />
+        <meta property="og:image:alt" content="Baterías" />
+
+        <link rel="icon" href="./favicon.ico" sizes="any" />
+        <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="./icon.png" />
+
+        <link rel="manifest" href="site.webmanifest" />
+        <meta name="theme-color" content="#fafafa" />
+    </head>
+
+    <body>
+        <header class="container">
+            <a href="#">
+                <hgroup>
+                    <h2><span style="color: var(--pico-primary)">Sound</span>Seeker</h2>
+                    <p>Reservá tu melodía perfecta</p>
+                </hgroup>
+            </a>
+            <nav>
+                <ul style="align-items: baseline" class="desktop-menu">
+                    <li><a href="#">Inicio</a></li>
+                    <li><a href="#">Instrumentos</a></li>
+                    <li><a href="#">Contacto</a></li>
+                    <li>
+                        <input
+                            type="search"
+                            name="search"
+                            placeholder="Buscar..."
+                            aria-label="Search" />
+                    </li>
+                    <li>
+                        <a href="#" role="button" tabindex="0" class="primary">¡Hola, Admin!</a>
+                    </li>
+                </ul>
+                <ul class="mobile-menu">
+                    <li>
+                        <button aria-label="Buscar" title="Buscar" class="nav-button">
+                            <img src="./img/magnifying-glass-solid.svg" alt="Buscar" />
+                        </button>
+                    </li>
+                    <li>
+                        <button
+                            aria-label="Perfil de Usuario"
+                            title="Perfil de Usuario"
+                            class="nav-button">
+                            <img src="./img/circle-user-regular.svg" alt="Perfil de Usuario" />
+                        </button>
+                    </li>
+                    <li>
+                        <button aria-label="Menú" title="Menú" class="nav-button">
+                            <img src="./img/bars-solid.svg" alt="Menú" />
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+        </header>
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ul>
+                    <li><a href="#">Inicio</a></li>
+                    <li>Panel de Administración</li>
+                </ul>
+            </nav>
+        </div>
+        <main class="container">
+            <section>
+                <div class="title-container">
+                    <hgroup>
+                        <h2>Listado de instrumentos</h2>
+                        <p>¡Administra nuestra colección!</p>
+                    </hgroup>
+                    <button
+                        class="primary"
+                        id="register-button"
+                        aria-label="Agregar un nuevo instrumento"
+                        title="Agregar un nuevo instrumento"
+                        data-target="register-dialog">
+                        ¡Agrega un nuevo instrumento!
+                    </button>
+                </div>
+                <div class="overflow-auto">
+                    <progress></progress>
+                    <table class="striped">
+                        <thead>
+                            <tr>
+                                <th class="center">ID</th>
+                                <th class="center">Imagen</th>
+                                <th class="center">Nombre</th>
+                                <th class="center">Descripción</th>
+                                <th class="center">Marca</th>
+                                <th class="center">Precio</th>
+                                <th class="center">Disponible</th>
+                                <th class="center">Categoría</th>
+                                <th class="center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="products-table-body"></tbody>
+                    </table>
+                </div>
+            </section>
+            <dialog id="register-dialog" role="alertdialog" aria-labelledby="form-container">
+                <article id="form-container">
+                    <header>
+                        <hgroup>
+                            <h2 id="product-form-title">¡Agrega un instrumento!</h2>
+                            <p id="product-form-subtitle">Ingresa todos los datos ¡y ya está!</p>
+                        </hgroup>
+                    </header>
+                    <form id="product-form">
+                        <fieldset>
+                            <input type="hidden" id="product-id" name="product-id" />
+
+                            <label for="product-name">Nombre</label>
+                            <input
+                                type="text"
+                                id="product-name"
+                                aria-label="Nombre del instrumento."
+                                aria-describedby="product-name-invalid-helper"
+                                maxlength="60"
+                                name="product-name"
+                                placeholder="Ingresa el nombre del instrumento."
+                                required />
+                            <small id="product-name-invalid-helper" hidden>
+                                ¡Por favor, ingresa un nombre válido! Recuerda que el límite es de
+                                60 caracteres y no puede haber dos productos con el mismo nombre.
+                            </small>
+
+                            <label for="product-description">Descripción</label>
+                            <textarea
+                                type="text"
+                                id="product-description"
+                                aria-label="Descripción del instrumento."
+                                aria-describedby="product-description-invalid-helper"
+                                name="product-description"
+                                maxlength="1000"
+                                placeholder="Ingresa la descripción del instrumento."
+                                required></textarea>
+                            <small id="product-description-invalid-helper" hidden>
+                                ¡Por favor, ingresa una descripción válida! Recuerda que el límite
+                                de caracteres es de 1000 caracteres.
+                            </small>
+
+                            <label for="product-select-brand">Marca</label>
+                            <select
+                                id="product-select-brand"
+                                aria-label="Selector de marcas existentes."
+                                aria-describedby="product-select-brand-invalid-helper"
+                                name="product-select-brand"
+                                required>
+                                <option selected disabled value="">
+                                    Selecciona una marca existente...
+                                </option>
+                                <option value="1">Armstrong</option>
+                                <option value="2">Bach</option>
+                                <option value="3">Conn</option>
+                                <option value="4">Conn-Selmer</option>
+                                <option value="5">Cort</option>
+                                <option value="6">Fender</option>
+                                <option value="7">Gliga</option>
+                                <option value="8">Hohner</option>
+                                <option value="9">Jimbao</option>
+                                <option value="10">Kalani</option>
+                                <option value="11">Kawai</option>
+                                <option value="12">Kurzweil</option>
+                                <option value="13">Leblanc</option>
+                                <option value="14">LP</option>
+                                <option value="15">Ludwig</option>
+                                <option value="16">Mahalo</option>
+                                <option value="17">Medeli</option>
+                                <option value="18">Pearl</option>
+                                <option value="19">Roland</option>
+                                <option value="20">Steinway & Sons</option>
+                                <option value="21">Tom Grasso</option>
+                                <option value="22">Tycoon</option>
+                                <option value="23">Valencia</option>
+                                <option value="24">Verona</option>
+                                <option value="25">Yamaha</option>
+                                <option value="0">Otra...</option>
+                            </select>
+                            <small id="product-select-brand-invalid-helper" hidden>
+                                ¡Por favor, selecciona una marca de la lista o ingresa una nueva!
+                            </small>
+
+                            <label for="product-new-brand" hidden>Nueva marca</label>
+                            <input
+                                type="text"
+                                id="product-new-brand"
+                                aria-label="Ingresar nueva marca."
+                                aria-describedby="product-new-brand-invalid-helper"
+                                hidden
+                                name="product-new-brand"
+                                maxlength="60"
+                                placeholder="Ingresa la nueva marca del instrumento." />
+                            <small id="product-new-brand-invalid-helper" hidden>
+                                ¡Por favor, ingresa una marca válida! Recuerda que el límite es de
+                                60 caracteres y no puede haber dos marcas repetidas.
+                            </small>
+
+                            <label for="product-price">Precio</label>
+                            <input
+                                type="number"
+                                id="product-price"
+                                aria-label="Precio del instrumento."
+                                aria-describedby="product-price-invalid-helper"
+                                name="product-price"
+                                placeholder="Ingresa el precio del instrumento."
+                                required
+                                step="0.01" />
+                            <small id="product-price-invalid-helper" hidden>
+                                ¡Por favor, ingresa un precio válido!
+                            </small>
+
+                            <label>
+                                <span role="heading" style="display: block">Disponibilidad</span>
+                                <input
+                                    type="checkbox"
+                                    id="product-available"
+                                    checked
+                                    name="product-available"
+                                    role="switch" />
+                                ¿Está disponible este instrumento?
+                            </label>
+
+                            <label for="product-thumbnail">Imagen</label>
+                            <input
+                                type="file"
+                                id="product-thumbnail"
+                                accept="image/jpg image/jpeg image/gif image/png image/webp"
+                                aria-label="Imagen del instrumento."
+                                aria-describedby="product-thumbnail-invalid-helper"
+                                name="product-thumbnail" />
+                            <small id="product-thumbnail-invalid-helper" hidden>
+                                ¡Por favor, selecciona una imagen válida! El límite de tamaño es de
+                                1 MB y se aceptan los formatos GIF, JPG, JPEG, PNG y WEBP.
+                            </small>
+
+                            <label for="product-category">Categoría</label>
+                            <select
+                                id="product-category"
+                                aria-label="Selector de categorías existentes."
+                                aria-describedby="product-category-invalid-helper"
+                                name="product-category"
+                                required>
+                                <option selected disabled value="">
+                                    Selecciona una categoría...
+                                </option>
+                                <option value="2">Acordeones</option>
+                                <option value="6">Baterías</option>
+                                <option value="1">Guitarras y Cuerdas</option>
+                                <option value="4">Percusión</option>
+                                <option value="3">Pianos</option>
+                                <option value="5">Teclados</option>
+                                <option value="7">Vientos</option>
+                                <option value="8">Violines y Violas</option>
+                            </select>
+                            <small id="product-category-invalid-helper" hidden>
+                                ¡Por favor, selecciona una categoría de la lista!
+                            </small>
+
+                            <button type="submit" style="margin-bottom: 0">
+                                ¡Guardar en el catálogo!
+                            </button>
+                        </fieldset>
+                    </form>
+                    <footer>
+                        <button
+                            type="button"
+                            class="contrast"
+                            id="product-form-cancel"
+                            data-target="register-dialog">
+                            ¡Ya no quiero agregar un instrumento!
+                        </button>
+                    </footer>
+                </article>
+            </dialog>
+        </main>
+        <footer class="container">
+            <nav>
+                <ul>
+                    <li><a href="#">Inicio</a></li>
+                    <li><a href="#">Instrumentos</a></li>
+                    <li><a href="#">Contacto</a></li>
+                    <li><a href="#">Políticas</a></li>
+                </ul>
+            </nav>
+            <a href="#">
+                <hgroup>
+                    <h2><span style="color: var(--pico-primary)">Sound</span>Seeker</h2>
+                    <p>Reservá tu melodía perfecta</p>
+                </hgroup>
+            </a>
+            <p>© 2025 SoundSeeker. Todos los derechos reservados.</p>
+        </footer>
+        <script type="module" src="./js/modal.js"></script>
+        <script type="module" src="./js/admin.js"></script>
+    </body>
+</html>
